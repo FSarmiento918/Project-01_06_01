@@ -19,22 +19,65 @@ function validateForm(evt) {
         evt.returnValue = false;
     }
     validateRequired();
-//    validateNumbers();
 }
 
-////remove placeholder text
-//function zeroPlaceholder() {
-//    var addressBox = document.getElementById("addrinput");
-//    addressBox.style.color = "black";
-//    if (addressBox.value === addressBox.placeholder) {
-//        addressBox.value === "";
-//    }
-//}
-//
-////function to restore placeholder text if box contains no user entry
-//function checkPlaceholder() {
-//    var addressBox = 
-//}
+//remove placeholder text
+function zeroPlaceholder() {
+    var addressBox = document.getElementById("addrinput");
+    addressBox.style.color = "black";
+    if (addressBox.value === addressBox.placeholder) {
+        addressBox.value === "";
+    }
+}
+
+//function to restore placeholder text if box contains no user entry
+function checkPlaceholder() {
+    var addressBox = document.getElementById("addrinput");
+    addressBox.style.color = "black";
+    if (addressBox.value === "") {
+        addressBox.style.color = "rgb(178,184,183)";
+        addressBox.value = addressBox.placeholder;
+    }
+}
+
+//add placeholder text for browsers that don't support placeholder attribute
+function generatePlaceholder() {
+    if (!Modernizr.input.placeholder) {
+        var addressBox = document.getElementById("addrinput");
+        addressBox.value = addressBox.placeholder;
+        addressBox.style.color = "rgb(178,184,183)";
+        if (addressBox.addEventListener) {
+            addressBox.addEventListener("focus", zeroPlaceholder, false);
+            addressBox.addEventListener("blur", checkPlaceholder, false);
+        } else if (addressBox.attachEvent) {
+            addressBox.attachEvent("onfocus", zeroPlaceholder);
+            addressBox.attachEvent("onblur", checkPlaceholder);
+        }
+    }
+}
+
+//function to switch focus on SSN box
+function advanceSsn() {
+    var ssnFields = document.getElementsByClassName("ssn");
+    var currentField = document.activeElement;
+    if (currentField.value.length === currentField.maxLength) {
+        if (currentField === ssnFields[0]) {
+            ssnFields[1].focus();
+        }
+        if (currentField === ssnFields[1]) {
+            ssnFields[2].focus();
+        }
+        if (currentField === ssnFields[2]) {
+            document.getElementById("submitBtn").focus();
+        }
+    }
+}
+
+//function to set up page with all function calls
+function setUpPage() {
+    createEventListeners();
+    generatePlaceholder();
+}
 
 //function to validate the required sections of the form
 function validateRequired() {
@@ -72,7 +115,19 @@ function validateRequired() {
 
 //function to create event listeners for the document
 function createEventListeners() {
+    var ssnFields = document.getElementsByClassName("ssn");
+    for (var i = 0; i < ssnFields.length; i++) {
+        if (ssnFields[i].addEventListener) {
+            ssnFields[i].addEventListener("input", advanceSsn, false);
+        } else if (ssnFields[i].attachEvent) {
+            ssnFields[i].attachEvent("oninput", advanceSsn);
+        }
+    }
     window.addEventListener("submit", validateForm);
 }
 
-window.addEventListener("load", createEventListeners);
+if (window.addEventListener) {
+    window.addEventListener("load", setUpPage, false);
+} else if (window.attachEvent) {
+    window.attachEvent("onload", setUpPage);
+}
